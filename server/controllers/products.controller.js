@@ -43,3 +43,38 @@ export const seedProducts = async (req, res) => {
     res.send(error);
   }
 };
+
+export const listAllTransactions = async (req, res) => {
+  try {
+    // get query parameters
+    const search = req.query.search || "";
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.perPage) || 10;
+    const query = {
+      $or: [
+        { title: { $regex: `\\b${search}\\b`, $options: "i" } },
+        { description: { $regex: `\\b${search}\\b`, $options: "i" } },
+      ],
+    };
+
+    // Add Query For Price
+    const searchNumber = parseFloat(search);
+    if (!isNaN(searchNumber)) {
+      query.$or.push({ price: searchNumber });
+    }
+    if (!search) {
+      delete query.$or;
+    }
+    const transactions = await Product.find(query)
+      .skip((page - 1) * perPage)
+      .limit(perPage);
+    console.log(transactions);
+    res.json({
+      success: true,
+      data: transactions,
+    });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+};
