@@ -3,6 +3,7 @@ import {
   barChart,
   getStatistics,
   listAllTransactions,
+  pieChart,
   seedProducts,
 } from "../controllers/products.controller.js";
 
@@ -13,6 +14,7 @@ router
   .get("/list-all-transactions", listAllTransactions)
   .get("/statistics", getStatistics)
   .get("/bar-chart", barChart)
+  .get("/pie-chart", pieChart)
   .get("/");
 
 export default router;

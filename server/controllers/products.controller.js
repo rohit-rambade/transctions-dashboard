@@ -187,3 +187,43 @@ export const barChart = async (req, res) => {
     res.send(error);
   }
 };
+
+export const pieChart = async (req, res) => {
+  try {
+    const { month } = req.query || 1;
+    console.log(month);
+    if (!month) {
+      return res.status(400).json({
+        message: "Month parameter is required",
+        success: false,
+      });
+    }
+
+    const allProduct = await Product.find();
+
+    const selectedProducts = allProduct.filter((product) => {
+      const date = new Date(product.dateOfSale);
+      const [monthOfSale] = [date.getUTCMonth() + 1];
+
+      if (parseInt(month) === monthOfSale) {
+        return product;
+      }
+    });
+    const categoryCounts = {};
+
+    selectedProducts.forEach((product) => {
+      const category = product.category;
+      if (!categoryCounts[category]) {
+        categoryCounts[category] = 0;
+      }
+      categoryCounts[category]++;
+    });
+
+    res.status(200).json({
+      data: categoryCounts,
+    });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+};
