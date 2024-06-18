@@ -81,8 +81,8 @@ export const listAllTransactions = async (req, res) => {
 
 export const getStatistics = async (req, res) => {
   try {
-    const { month } = req.query || 1;
-    console.log(month);
+    const { month } = req.query;
+
     if (!month) {
       return res.status(400).json({
         message: "Month parameter is required",
@@ -121,7 +121,7 @@ export const getStatistics = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.send(error);
+    res.send(error.message);
   }
 };
 
@@ -139,8 +139,8 @@ function getPriceRange(price) {
 }
 export const barChart = async (req, res) => {
   try {
-    const { month } = req.query || 1;
-    console.log(month);
+    const { month } = req.query;
+
     if (!month) {
       return res.status(400).json({
         message: "Month parameter is required",
@@ -170,7 +170,7 @@ export const barChart = async (req, res) => {
       "801-900": 0,
       "901-above": 0,
     };
-    console.log(selectedProducts);
+
     selectedProducts.forEach((product) => {
       const priceRange = getPriceRange(product.price);
       priceRanges[priceRange]++;
@@ -190,8 +190,8 @@ export const barChart = async (req, res) => {
 
 export const pieChart = async (req, res) => {
   try {
-    const { month } = req.query || 1;
-    console.log(month);
+    const { month } = req.query;
+
     if (!month) {
       return res.status(400).json({
         message: "Month parameter is required",
@@ -225,5 +225,43 @@ export const pieChart = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.send(error);
+  }
+};
+
+export const combineData = async (req, res) => {
+  const PORT = process.env.PORT || 3000;
+  try {
+    const { month } = req.query;
+
+    if (!month) {
+      return res.status(400).json({
+        message: "Month parameter is required",
+        success: false,
+      });
+    }
+
+    // Fetch data from all three APIs
+    const [statisticsResponse, barChartResponse, pieChartResponse] =
+      await Promise.all([
+        axios.get(`http://localhost:${PORT}/api/product/statistics`, {
+          params: { month },
+        }),
+        axios.get(`http://localhost:${PORT}/api/product/bar-chart`, {
+          params: { month },
+        }),
+        axios.get(`http://localhost:${PORT}/api/product/pie-chart`, {
+          params: { month },
+        }),
+      ]);
+
+    const combinedResponse = {
+      statistics: statisticsResponse.data.data,
+      barChart: barChartResponse.data.data,
+      pieChart: pieChartResponse.data.data,
+    };
+
+    res.status(200).json(combinedResponse);
+  } catch (error) {
+    res.status(500).send(error.message);
   }
 };

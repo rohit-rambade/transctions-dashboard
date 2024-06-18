@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   barChart,
+  combineData,
   getStatistics,
   listAllTransactions,
   pieChart,
@@ -15,6 +16,6 @@ router
   .get("/statistics", getStatistics)
   .get("/bar-chart", barChart)
   .get("/pie-chart", pieChart)
-  .get("/");
+  .get("/combined-data", combineData);
 
 export default router;
