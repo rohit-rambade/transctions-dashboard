@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Product } from "../models/Product.js";
+import { parseDate } from "../utility/parseDate.js";
 export const seedProducts = async (req, res) => {
   const URL = process.env.PRODUCTS_URL;
 
@@ -72,6 +73,52 @@ export const listAllTransactions = async (req, res) => {
     res.json({
       success: true,
       data: transactions,
+    });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+};
+
+export const getStatistics = async (req, res) => {
+  try {
+    const { month } = req.query || 1;
+    console.log(month);
+    if (!month) {
+      return res.status(400).json({
+        message: "Month parameter is required",
+        success: false,
+      });
+    }
+
+    const allProduct = await Product.find();
+
+    let soldItems = 0;
+    let notSoldItems = 0;
+    const selectedProducts = allProduct.filter((product) => {
+      const date = new Date(product.dateOfSale);
+      const [monthOfSale] = [
+        // date.getUTCFullYear(),
+        date.getUTCMonth() + 1,
+      ];
+
+      if (parseInt(month) === monthOfSale && product.sold) {
+        soldItems++;
+        return product;
+      }
+      notSoldItems++;
+    });
+    const totalSaleAmount = selectedProducts.reduce((total, product) => {
+      return total + product.price;
+    }, 0);
+
+    res.json({
+      success: true,
+      data: {
+        totalSaleAmount,
+        soldItems,
+        notSoldItems,
+      },
     });
   } catch (error) {
     console.log(error);
