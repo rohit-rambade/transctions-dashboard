@@ -1,6 +1,5 @@
 import axios from "axios";
 import { Product } from "../models/Product.js";
-import { parseDate } from "../utility/parseDate.js";
 export const seedProducts = async (req, res) => {
   const URL = process.env.PRODUCTS_URL;
 
@@ -118,6 +117,69 @@ export const getStatistics = async (req, res) => {
         totalSaleAmount,
         soldItems,
         notSoldItems,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+};
+
+function getPriceRange(price) {
+  if (price <= 100) return "0-100";
+  if (price <= 200) return "101-200";
+  if (price <= 300) return "201-300";
+  if (price <= 400) return "301-400";
+  if (price <= 500) return "401-500";
+  if (price <= 600) return "501-600";
+  if (price <= 700) return "601-700";
+  if (price <= 800) return "701-800";
+  if (price <= 900) return "801-900";
+  return "901-above";
+}
+export const barChart = async (req, res) => {
+  try {
+    const { month } = req.query || 1;
+    console.log(month);
+    if (!month) {
+      return res.status(400).json({
+        message: "Month parameter is required",
+        success: false,
+      });
+    }
+
+    const allProduct = await Product.find();
+
+    const selectedProducts = allProduct.filter((product) => {
+      const date = new Date(product.dateOfSale);
+      const [monthOfSale] = [date.getUTCMonth() + 1];
+
+      if (parseInt(month) === monthOfSale) {
+        return product;
+      }
+    });
+    const priceRanges = {
+      "0-100": 0,
+      "101-200": 0,
+      "201-300": 0,
+      "301-400": 0,
+      "401-500": 0,
+      "501-600": 0,
+      "601-700": 0,
+      "701-800": 0,
+      "801-900": 0,
+      "901-above": 0,
+    };
+    console.log(selectedProducts);
+    selectedProducts.forEach((product) => {
+      const priceRange = getPriceRange(product.price);
+      priceRanges[priceRange]++;
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        priceRanges,
       },
     });
   } catch (error) {

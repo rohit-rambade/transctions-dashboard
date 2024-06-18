@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  barChart,
   getStatistics,
   listAllTransactions,
   seedProducts,
@@ -11,6 +12,7 @@ router
   .get("/seed-products", seedProducts)
   .get("/list-all-transactions", listAllTransactions)
   .get("/statistics", getStatistics)
+  .get("/bar-chart", barChart)
   .get("/");
 
 export default router;
